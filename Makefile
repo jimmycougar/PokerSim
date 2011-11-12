@@ -8,7 +8,8 @@ MAINSRC = \
 
 MODELSRC = \
 	card.cpp \
-	deck.cpp
+	deck.cpp \
+	regulator.cpp
 
 VIEWSRC = \
 	cardprinter.cpp
@@ -34,7 +35,7 @@ INCDIRS = $(SRCDIR)
 
 LIBS =
 
-all: builddirs $(DESTDIR) $(DESTDIR)/$(PRODUCT)
+all: clean builddirs $(DESTDIR) $(DESTDIR)/$(PRODUCT)
 
 $(DESTDIR)/$(PRODUCT): $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
