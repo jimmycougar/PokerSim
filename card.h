@@ -40,6 +40,6 @@ class Card
 		NUMBER num;
 		SUIT suit;
 
-}
+};
 #endif //CARD_H
 
