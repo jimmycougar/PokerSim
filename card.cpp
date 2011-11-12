@@ -1,10 +1,10 @@
-#include "Card.h"
+#include "card.h"
 
-Card::Card(NUMBER inNum, SUIT inSuit) :
+Card::Card(NUMBER inNum, SUIT inSuit) : 
 	num(inNum),
 	suit(inSuit)
 {
-	
+
 }
 
 Card::NUMBER Card::GetNumber() 
@@ -12,7 +12,7 @@ Card::NUMBER Card::GetNumber()
 	return num;
 }
 
-Card::SUIT Card::GetSuit() 
+Card::SUIT Card::GetSuit()
 {
 	return suit;
 }
