@@ -1,9 +1,9 @@
 #ifndef DECK_H
 #define DECK_H
 
-class Card;
+#include "card.h"
 
-#define DECKSIZE 52
+#define DECKSIZE NUMSUITS*NUMCARDINALS
 
 class Deck 
 {
