@@ -11,10 +11,10 @@ MODELSRC = \
 	deck.cpp
 
 VIEWSRC = \
-	
+	cardprinter.cpp
 
 CONTROLSRC = \
-	
+	controller.cpp
 
 MODELDIR = model
 VIEWDIR = view
@@ -30,7 +30,7 @@ SRC += $(addprefix $(CONTROLDIR)/, $(CONTROLSRC))
 
 OBJ = $(addprefix $(BUILDDIR)/, $(addsuffix .o, $(basename $(SRC))))
 
-INCDIRS =
+INCDIRS = $(SRCDIR)
 
 LIBS =
 

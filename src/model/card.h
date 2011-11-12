@@ -37,14 +37,9 @@ public:
 	Card(Cardinal inCardinal, Suit inSuit);
 
 	Cardinal GetCardinal();
-	const char * GetCardinalString();
 	Suit GetSuit();
-	const char * GetSuitString();
 		
 private:
-
-	const static char * CardinalString[];
-	const static char * SuitString[];
 
 	Cardinal cardinal;
 	Suit suit;
