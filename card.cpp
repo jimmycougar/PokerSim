@@ -1,18 +1,18 @@
 #include "card.h"
 
-Card::Card(NUMBER inNum, SUIT inSuit) : 
-	num(inNum),
+Card::Card(Cardinal inCardinal, Suit inSuit) : 
+	cardinal(inCardinal),
 	suit(inSuit)
 {
 
 }
 
-Card::NUMBER Card::GetNumber() 
+Card::Cardinal Card::GetCardinal() 
 {
-	return num;
+	return cardinal;
 }
 
-Card::SUIT Card::GetSuit()
+Card::Suit Card::GetSuit()
 {
 	return suit;
 }

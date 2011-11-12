@@ -4,41 +4,41 @@
 class Card
 {
 
-	public:
-		Card(NUMBER inNum, SUIT inSuit);
+public:
+        enum Cardinal  
+        {       
+                ACE,    
+                TWO,    
+                THREE,  
+                FOUR,   
+                FIVE,   
+                SIX,    
+                SEVEN,  
+                EIGHT,  
+                NINE,   
+                TEN,    
+                JACK,   
+                QUEEN,  
+                KING    
+        };
 
-		NUMBER GetNumber();
-		SUIT GetSuit();
+	enum Suit
+	{
+		HEART,
+		DIAMOND,
+		SPADE,
+		CLUB
+	};
+
+	Card(Cardinal inCardinal, Suit inSuit);
+
+	Cardinal GetCardinal();
+	Suit GetSuit();
 		
-		enum NUMBER 
-		{
-			ACE,
-			TWO,
-			THREE,
-			FOUR,
-			FIVE,
-			SIX,
-			SEVEN,
-			EIGHT,
-			NINE,
-			TEN,
-			JACK,
-			QUEEN,
-			KING
-		};
-
-		enum SUIT
-		{
-			HEART,
-			DIAMOND,
-			SPADE,
-			CLUB
-		};
-
 	private:
 
-		NUMBER num;
-		SUIT suit;
+		Cardinal cardinal;
+		Suit suit;
 
 };
 #endif //CARD_H

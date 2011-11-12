@@ -1,4 +1,5 @@
 #include "deck.h"
+#include "card.h"
 
 Deck::Deck(Card* inCardInstance) 
 {
@@ -23,5 +24,8 @@ void Deck::Shuffle()
 
 Card* Deck::Pop() 
 {
-
+	if (nextCard >= DECKSIZE)
+		return 0;
+	return cards[nextCard++];
 }
+
