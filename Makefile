@@ -10,6 +10,8 @@ MODELSRC = \
 	card.cpp \
 	deck.cpp \
 	handstrength.cpp \
+	player.cpp \
+	seat.cpp \
 	regulator.cpp
 
 VIEWSRC = \
