@@ -15,15 +15,13 @@ Controller::~Controller()
 void Controller::Run()
 {
 	Deck * deck = regulator.GetDeck();
-	CardPrinter::PrintDeck(deck);
 	deck->Shuffle();
-
-	CardPrinter::PrintDeck(deck);
 	deck->Shuffle();
-	CardPrinter::PrintDeck(deck);
 	
 	
 	//TODO: check that blinds are in place
-	//regulator.DealCards();
+	
+	regulator.DealCards();
+	CardPrinter::PrintSeats(regulator.GetSeats());
 }
 
