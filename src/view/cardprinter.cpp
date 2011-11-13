@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdio.h>
 #include <exception>
 #include <vector>
 
@@ -6,6 +7,7 @@
 #include "model/card.h"
 #include "model/deck.h"
 #include "model/seat.h"
+#include "model/handstrength.h"
 
 const char * CardPrinter::cardinalString[] = {
 	"Two",
@@ -28,6 +30,17 @@ const char * CardPrinter::suitString[] = {
 	" of Spades",
 	" of Clubs"};
 
+const char * CardPrinter::strengthString[] = {
+	"%s high",
+	"Pair of %ss",
+	"Two pair: %ss up",
+	"Three %ss",
+	"Straight: %s high",
+	"Flush: %s high",
+	"Full house: %ss full",
+	"Four %ss",
+	"Straight flush: %s high" };
+
 void CardPrinter::Print(Card * card)
 {
 	if(!card)
@@ -35,6 +48,12 @@ void CardPrinter::Print(Card * card)
 
 	std::cout << cardinalString[card->GetCardinal()] 
 		<< suitString[card->GetSuit()] << std::endl;
+}
+
+void CardPrinter::PrintHandStrength(HandStrength * handStrength)
+{
+	printf(strengthString[handStrength->handType], cardinalString[handStrength->handVal[0]]);
+	printf("\n");
 }
 
 void CardPrinter::PrintDeck(Deck * deck) 

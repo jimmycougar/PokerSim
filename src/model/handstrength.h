@@ -10,7 +10,7 @@ public:
 	HandStrength(Card ** cards, int numCards);
 	bool operator<(const HandStrength & other);
 	bool operator==(const HandStrength & other);
-private:
+
 	enum HandType {
 		NoPair,
 		OnePair,
@@ -23,6 +23,7 @@ private:
 		StraightFlush };
 
 	HandType handType;
+
 	int handVal[5];
 };
 
