@@ -10,7 +10,6 @@ class Card
 public:
 	enum Cardinal  
 	{       
-		ACE,
 		TWO,
 		THREE,
 		FOUR,
@@ -22,7 +21,8 @@ public:
 		TEN,
 		JACK,
 		QUEEN,
-		KING
+		KING,
+		ACE
 	};
 
 	enum Suit
