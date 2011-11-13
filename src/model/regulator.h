@@ -16,7 +16,7 @@ public:
 	~Regulator();
 
 	Deck * GetDeck();
-
+	void DealCards();
 private:
 	void initCards();
 

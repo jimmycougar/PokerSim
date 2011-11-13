@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include "deck.h"
 #include "card.h"
 
@@ -19,7 +21,16 @@ Deck::~Deck()
 
 void Deck::Shuffle() 
 {
+	for(int i=0; i<DECKSIZE; i++)
+	{
+		int randomIndex = i + (rand() % (DECKSIZE-i));
+		
+		Card* temp = cards[i];
+		cards[i] = cards[randomIndex];
+		cards[randomIndex] = temp; 
+	}
 
+	nextCard = 0;
 }
 
 Card* Deck::Pop() 

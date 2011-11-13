@@ -1,7 +1,9 @@
 #include <iostream>
+#include <exception>
 
 #include "view/cardprinter.h"
 #include "model/card.h"
+#include "model/deck.h"
 
 const char * CardPrinter::cardinalString[] = {
 	"Ace",
@@ -33,3 +35,17 @@ void CardPrinter::Print(Card * card)
 		<< suitString[card->GetSuit()] << std::endl;
 }
 
+void CardPrinter::PrintDeck(Deck * deck) 
+{
+	if(!deck)
+	{
+		throw std::exception();
+	}
+
+	std::cout << "\nPrinting deck...\n";
+	Card * card;
+	while((card = deck->Pop()) != 0) 
+	{
+		Print(card);
+	}
+}

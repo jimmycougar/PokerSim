@@ -26,3 +26,8 @@ Deck * Regulator::GetDeck()
 {
 	return deck;
 }
+
+void Regulator::DealCards() 
+{
+
+}

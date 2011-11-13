@@ -15,9 +15,15 @@ Controller::~Controller()
 void Controller::Run()
 {
 	Deck * deck = regulator.GetDeck();
-	Card * card;
-	while( (card = deck->Pop()) != 0)
-	{
-		CardPrinter::Print(card);
-	}
+	CardPrinter::PrintDeck(deck);
+	deck->Shuffle();
+
+	CardPrinter::PrintDeck(deck);
+	deck->Shuffle();
+	CardPrinter::PrintDeck(deck);
+	
+	
+	//TODO: check that blinds are in place
+	//regulator.DealCards();
 }
+
