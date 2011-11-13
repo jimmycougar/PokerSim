@@ -9,6 +9,7 @@ MAINSRC = \
 MODELSRC = \
 	card.cpp \
 	deck.cpp \
+	handstrength.cpp \
 	regulator.cpp
 
 VIEWSRC = \
