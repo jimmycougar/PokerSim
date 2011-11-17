@@ -11,6 +11,8 @@ MODELSRC = \
 	deck.cpp \
 	handstrength.cpp \
 	player.cpp \
+	userplayer.cpp \
+	aiplayer.cpp \
 	seat.cpp \
 	regulator.cpp
 

@@ -12,7 +12,12 @@ public:
 	void Run();
 
 private:
+
+	void processOutput();
+	void handleInput();
+
 	Regulator regulator;
+	bool shutdown;
 };
 
 #endif // CONTROLLER_H

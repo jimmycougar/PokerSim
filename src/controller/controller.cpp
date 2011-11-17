@@ -1,12 +1,16 @@
 #include <iostream>
+#include <string>
 
 #include "controller/controller.h"
-#include "model/deck.h"
-#include "view/cardprinter.h"
+#include "model/userplayer.h"
+#include "model/aiplayer.h"
 
-#include "model/handstrength.h"
+using std::string;
+using std::cout;
+using std::cin;
 
-Controller::Controller()
+Controller::Controller() :
+	shutdown(false)
 {
 
 }
@@ -16,12 +20,32 @@ Controller::~Controller()
 
 }
 
+void Controller::processOutput()
+{
+}
+
+void Controller::handleInput()
+{
+}
+
 void Controller::Run()
 {
-	//Deck * deck = regulator.GetDeck();
-	//deck->Shuffle();
-	//deck->Shuffle();
-	
+	// get options
+	int numPlayers;
+	cout << "Number of AI players: ";
+	cin >> numPlayers;
+	int stackSize;
+	cout << "Starting stack size: ";
+	cin >> stackSize;
+
+	regulator.AddPlayer(new UserPlayer(stackSize));
+	for(int i=0; i<numPlayers; ++i)
+	{
+		regulator.AddPlayer(new AIPlayer(stackSize));
+	}
+
+	regulator.Simulate();
+/*
 	Card c1(Card::ACE, Card::SPADE);
 	Card c2(Card::QUEEN, Card::HEART);
 	Card c3(Card::TEN, Card::DIAMOND);
@@ -49,7 +73,7 @@ void Controller::Run()
 	CardPrinter::PrintHandStrength(winner);
 	std::cout << " beats \n";
 	CardPrinter::PrintHandStrength(loser);
-
+*/
 	
 	//TODO: check that blinds are in place
 	
