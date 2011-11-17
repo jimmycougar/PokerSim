@@ -45,7 +45,6 @@ private:
 	// game-wide member vars
 	Card cards[DECKSIZE];
 	Deck * deck;
-	int numPlayers;
 	Table seats;
 
 	// hand specific member vars

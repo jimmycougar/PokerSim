@@ -7,7 +7,6 @@ Regulator::Regulator()
 {
 	initCards();
 	deck = new Deck(cards);
-	numPlayers = 0;
 }
 
 Regulator::~Regulator()
@@ -38,7 +37,7 @@ void Regulator::AddPlayer(Player * newPlayer)
 		return;
 
 	Seat * seat;
-	seat->seatNum = numPlayers++;
+	seat->seatNum = seats.size();
 	seat->player = newPlayer;
 	seats.push_back(seat);
 }
@@ -121,7 +120,7 @@ void Regulator::beginHand()
 bool Regulator::getPlayerActions()
 {
 	// get player actions until largest bet has been called by all remaining players
-	while((*actionSeat)->currentBet < currentBet)
+	while((*actionSeat)->currentBet < currentBet || currentBet == 0)
 	{
 		// ask the player what he wants to do
 		int bet = (*actionSeat)->player->GetPlayerAction(currentBet);
@@ -145,9 +144,16 @@ bool Regulator::getPlayerActions()
 			++actionSeat;
 		}
 		
-		// wrap around
+		// handle action after button seat
 		if(actionSeat == seatsInHand.end())
-			actionSeat = seatsInHand.begin();
+		{
+			if(currentBet == 0)
+				// if it checked around
+				break;
+			else
+				// there is more action to be played; action is on first player
+				actionSeat = seatsInHand.begin();
+		}
 	}
 
 	// set the action on the player after the button
@@ -205,12 +211,36 @@ void Regulator::showdown()
 
 void Regulator::cleanupHand()
 {
+	// any players still in the hand at this point are winners
+	int winnings = potSize / seatsInHand.size();
+	unsigned int winners = 0;
+	for(Table::iterator iter = seatsInHand.begin(); iter != seatsInHand.end(); ++iter)
+	{
+		if((potSize % seatsInHand.size()) > winners)
+		{
+			(*iter)->stackSize += winnings + 1;
+		}
+		else
+		{
+			(*iter)->stackSize += winnings;
+		}
+		++winners;
+	}
+
+	// move the button
+	Seat * smallBlindSeat = seats.front();
+	seats.pop_front();
+	seats.push_back(smallBlindSeat);
 
 }
 
 void Regulator::dealCardsToBoard(int numCards)
 {
-
+	for(int i=0; i<numCards; ++i)
+	{
+		board.push_back(deck->Pop());
+		// notify
+	}
 }
 
 void Regulator::dealCardsToPlayers()

@@ -21,6 +21,7 @@ int Player::PostBlind(int blindSize)
 
 int Player::GetPlayerAction(int betSize)
 {
+	sleep(1);
 	return betSize;
 }
 
