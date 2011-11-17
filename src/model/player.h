@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include <string>
+
 using std::string;
 
 class Player
@@ -12,14 +13,12 @@ public:
 	Player(string inFirstName, string inLastName, int inBankRoll, int inStackSize);
 	~Player();
 
-	void PostBigBlind();
-	void PostSmallBlind();
-	void Fold();
-	void Call();
-	void Raise();
+	int PostBigBlind();
+	int PostSmallBlind();
 	int GetStackSize();
 	string GetFirstName();
 	string GetLastName();
+	int GetPlayerAction(int betSize);
 
 private:
 

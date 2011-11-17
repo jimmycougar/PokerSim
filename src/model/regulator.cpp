@@ -1,4 +1,5 @@
-#include "regulator.h"
+#include "model/regulator.h"
+#include "model/player.h"
 
 Regulator::Regulator()
 {
@@ -80,7 +81,80 @@ void Regulator::initSeats()
 	seats.push_back(seat10);
 }
 
-void Regulator::DealCards()
+void Regulator::BeginHand() 
+{
+	std::vector<Seat*>::iterator iter;
+	int currentPotSize, bigBlind, smallBlind = 0;
+
+	for(iter = seats.begin(); iter != seats.end(); iter++)
+	{
+		if(currentPotSize == 0)
+		{
+			smallBlind = (*iter)->player->PostSmallBlind();
+			currentPotSize++;
+		} 
+		else if(currentPotSize == 1)
+		{
+			bigBlind = (*iter)->player->PostBigBlind();
+			currentPotSize++;
+		} 
+		else
+		{
+			break;
+		}
+	}
+
+	std::vector<Seat*> preFlopSeatOrder(seats);
+	preFlopSeatOrder.push_back(preFlopSeatOrder.front());	//move small blind to back
+	preFlopSeatOrder.push_back(preFlopSeatOrder.front());	//move big blind to back
+
+	dealCardsToPlayers();
+	currentPotSize += requestPlayerAction(preFlopSeatOrder, bigBlind);
+
+	dealCardsToBoard(3);
+	currentPotSize += requestPlayerAction(seats, currentPotSize);
+
+	dealCardsToBoard(1);
+	currentPotSize += requestPlayerAction(seats, currentPotSize);
+
+	dealCardsToBoard(1);
+	currentPotSize += requestPlayerAction(seats, currentPotSize);
+
+	//Ask players to show cards and find winner
+}
+
+void Regulator::Notify()
+{
+	//go through our list of observers and call all notify functions
+}
+
+void Regulator::dealCardsToBoard(int numCards)
+{
+
+}
+
+int Regulator::requestPlayerAction(const std::vector<Seat*> &seatPositions, int currentBetSize)
+{
+	std::vector<Seat*>::const_iterator iter;
+	int originalBetSize = currentBetSize;
+
+	for(iter = seatPositions.begin(); iter != seatPositions.end(); iter++)
+	{
+		int playerBetSize = (*iter)->player->GetPlayerAction(originalBetSize);
+
+		if(playerBetSize > originalBetSize)
+		{
+			//TODO: make sure raise amount is valid
+		}
+
+		//regulator needs to handle player action
+	}
+
+	return 0;
+}
+
+
+void Regulator::dealCardsToPlayers()
 {
 	std::vector<Seat*>::iterator iter;
 	

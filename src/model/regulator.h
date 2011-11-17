@@ -21,12 +21,16 @@ public:
 	Deck * GetDeck();
 	std::vector<Seat*> GetSeats();
 	int GetPotSize();
-	void DealCards();
-
+	void BeginHand();
+	void Notify();
+	
 private:
 	void initCards();
 	void initPlayers();
 	void initSeats();
+	void dealCardsToPlayers();
+	int requestPlayerAction(const std::vector<Seat*> &seatPostions, int currentBetSize);
+	void dealCardsToBoard(int numCards);
 
 	Card cards[DECKSIZE];
 	Deck * deck;
