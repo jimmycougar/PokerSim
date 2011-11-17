@@ -12,6 +12,8 @@
 #include "model/deck.h"
 #include "model/seat.h"
 
+class Player;
+
 class Regulator
 {
 public:
@@ -20,8 +22,10 @@ public:
 
 	Deck * GetDeck();
 	std::vector<Seat*> GetSeats();
+	void AddPlayer(Player * player);
 	int GetPotSize();
 	void DealCards();
+	void Simulate(){}
 
 private:
 	void initCards();

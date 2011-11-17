@@ -1,4 +1,5 @@
-#include "regulator.h"
+#include "model/regulator.h"
+#include "model/player.h"
 
 Regulator::Regulator()
 {
@@ -39,6 +40,11 @@ void Regulator::initCards()
 			cards[i*NUMCARDINALS+j] = Card((Card::Cardinal)j, (Card::Suit)i);
 		}
 	}
+}
+
+void Regulator::AddPlayer(Player * newPlayer)
+{
+
 }
 
 void Regulator::initPlayers() 
