@@ -1,15 +1,15 @@
 #ifndef HANDSTRENGTH_H
 #define HANDSTRENGTH_H
 
+#include <list>
 #include "model/card.h"
-
 
 class HandStrength
 {
 public:
-	HandStrength(Card ** cards, int numCards);
-	bool operator<(const HandStrength & other);
-	bool operator==(const HandStrength & other);
+	HandStrength(std::list<Card*> cards);
+	bool operator<(const HandStrength & other) const;
+	bool operator==(const HandStrength & other) const;
 
 	enum HandType {
 		NoPair,
@@ -22,9 +22,7 @@ public:
 		FourOfAKind,
 		StraightFlush };
 
-	HandType handType;
-
-	int handVal[5];
+	std::list<int> handVal;
 };
 
 #endif // HANDSTRENGTH_H

@@ -4,15 +4,11 @@
 #include "model/handstrength.h"
 #include "model/card.h"
 
-HandStrength::HandStrength(Card ** cards, int numCards) :
-	handType(NoPair)
+HandStrength::HandStrength(std::list<Card*> cards)
 {
 	// hand cannot be evaluated
-	if (numCards < 5)
+	if (cards.size() < 5)
 		return;
-
-	for(int i=0; i<5; ++i)
-		handVal[i] = 0;
 
 	bool flush = false;
 	int flushSuit;
@@ -25,11 +21,11 @@ HandStrength::HandStrength(Card ** cards, int numCards) :
 	std::list<int> suit[NUMSUITS];
 	
 	// count cardinals and sutis
-	for(int i=0; i<numCards; ++i)
+	for(std::list<Card*>::iterator i=cards.begin(); i != cards.end(); ++i)
 	{
-		int thisCardinal = cards[i]->GetCardinal();
+		int thisCardinal = (*i)->GetCardinal();
 		++cardinal[thisCardinal];
-		suit[cards[i]->GetSuit()].push_back(thisCardinal);
+		suit[(*i)->GetSuit()].push_back(thisCardinal);
 	}
 
 	// check for flush and save its suit
@@ -129,8 +125,8 @@ HandStrength::HandStrength(Card ** cards, int numCards) :
 
 		if(straightFlush)
 		{
-			handType = StraightFlush;
-			handVal[0] = straightFlushHigh;
+			handVal.push_back(StraightFlush);
+			handVal.push_back(straightFlushHigh);
 			return;
 		}
 	}
@@ -138,14 +134,14 @@ HandStrength::HandStrength(Card ** cards, int numCards) :
 	// check for 4 of a kind
 	if(!fourOfKindSet.empty())
 	{
-		handType = FourOfAKind;
-		handVal[0] = fourOfKindSet.front();
+		handVal.push_back(FourOfAKind);
+		handVal.push_back(fourOfKindSet.front());
 		
 		for(int i=Card::ACE; i >= 0; --i)
 		{
-			if(i != handVal[0] && cardinal[i])
+			if(i != handVal.front() && cardinal[i])
 			{
-				handVal[1] = cardinal[i];
+				handVal.push_back(cardinal[i]);
 				break;
 			}
 		}
@@ -155,16 +151,24 @@ HandStrength::HandStrength(Card ** cards, int numCards) :
 	// check for full house
 	if((!threeOfKindSet.empty() && !twoOfKindSet.empty()) || threeOfKindSet.size() > 1)
 	{
-		handType = FullHouse;
-		handVal[0] = threeOfKindSet.front();
+		handVal.push_back(FullHouse);
+		handVal.push_back(threeOfKindSet.front());
 		threeOfKindSet.pop_front();
 
+		handVal.push_back(-1);
+
 		if(!threeOfKindSet.empty())
-			handVal[1] = threeOfKindSet.front();
+		{
+			handVal.pop_back();
+			handVal.push_back(threeOfKindSet.front());
+		}
 
 		if(!twoOfKindSet.empty())
-			if(twoOfKindSet.front() > handVal[1])
-				handVal[1] = twoOfKindSet.front();
+			if(twoOfKindSet.front() > handVal.back())
+			{
+				handVal.pop_back();
+				handVal.push_back(twoOfKindSet.front());
+			}
 
 		return;
 	}
@@ -172,10 +176,10 @@ HandStrength::HandStrength(Card ** cards, int numCards) :
 	// check for flush
 	if(flush)
 	{
-		handType = Flush;
+		handVal.push_back(Flush);
 		for(int i=0; i<5; ++i)
 		{
-			handVal[i] = suit[flushSuit].back();
+			handVal.push_back(suit[flushSuit].back());
 			suit[flushSuit].pop_back();
 		}
 		return;
@@ -184,39 +188,27 @@ HandStrength::HandStrength(Card ** cards, int numCards) :
 	// check for straight
 	if(straight)
 	{
-		handType = Straight;
-		handVal[0] = straightHigh;
+		handVal.push_back(Straight);
+		handVal.push_back(straightHigh);
 		return;
 	}
 
 	// check for three of a kind
 	if(!threeOfKindSet.empty())
 	{
-		handType = ThreeOfAKind;
-		handVal[0] = threeOfKindSet.front();
+		handVal.push_back(ThreeOfAKind);
+		handVal.push_back(threeOfKindSet.front());
 		threeOfKindSet.pop_front();
 
-		// get next two high card values - they could be in any of the sets
-		if(!threeOfKindSet.empty())
-			handVal[1] = threeOfKindSet.front();
-
-		if(!twoOfKindSet.empty() && twoOfKindSet.front() > handVal[1])
+		// get next two high card values - they can only be in oneOfKind, or else this would be a full house
+		if(!oneOfKindSet.empty()) 
 		{
-			handVal[1] = twoOfKindSet.front();
-			twoOfKindSet.pop_front();
-		}
-		
-		if(!twoOfKindSet.empty() && twoOfKindSet.front() > handVal[2])
-			handVal[2] = twoOfKindSet.front();
-
-		if(!oneOfKindSet.empty() && oneOfKindSet.front() > handVal[1])
-		{
-			handVal[1] = oneOfKindSet.front();
+			handVal.push_back(oneOfKindSet.front());
 			oneOfKindSet.pop_front();
 		}
 
-		if(!oneOfKindSet.empty() && oneOfKindSet.front() > handVal[2])
-			handVal[2] = oneOfKindSet.front();
+		if(!oneOfKindSet.empty())
+			handVal.push_back(oneOfKindSet.front());
 
 		return;
 	}
@@ -224,18 +216,23 @@ HandStrength::HandStrength(Card ** cards, int numCards) :
 	// check for two pair
 	if(twoOfKindSet.size() > 1)
 	{
-		handType = TwoPair;
-		handVal[0] = twoOfKindSet.front();
+		handVal.push_back(TwoPair);
+		handVal.push_back(twoOfKindSet.front());
 		twoOfKindSet.pop_front();
-		handVal[1] = twoOfKindSet.front();
+		handVal.push_back(twoOfKindSet.front());
 		twoOfKindSet.pop_front();
+
+		handVal.push_back(-1);
 
 		// get one high card value
 		if(!twoOfKindSet.empty())
-			handVal[2] = twoOfKindSet.front();
+		{
+			handVal.pop_back();
+			handVal.push_back(twoOfKindSet.front());
+		}
 
-		if(oneOfKindSet.front() > handVal[2])
-			handVal[2] = oneOfKindSet.front();
+		if(oneOfKindSet.front() > handVal.back())
+			handVal.push_back(oneOfKindSet.front());
 
 		return;
 	}
@@ -243,13 +240,13 @@ HandStrength::HandStrength(Card ** cards, int numCards) :
 	// check for one pair
 	if(!twoOfKindSet.empty())
 	{
-		handType = OnePair;
-		handVal[0] = twoOfKindSet.front();
+		handVal.push_back(OnePair);
+		handVal.push_back(twoOfKindSet.front());
 
 		// set handVal for high cards
 		for(int i=1; i<4; ++i)
 		{
-			handVal[i] = oneOfKindSet.front();
+			handVal.push_back(oneOfKindSet.front());
 			oneOfKindSet.pop_front();
 		}
 
@@ -257,40 +254,39 @@ HandStrength::HandStrength(Card ** cards, int numCards) :
 	}
 
 	// no pair
-	handType = NoPair;
+	handVal.push_back(NoPair);
 	for(int i=0; i<5; ++i)
 	{
-		handVal[i] = oneOfKindSet.front();
+		handVal.push_back(oneOfKindSet.front());
 		oneOfKindSet.pop_front();
 	}
 
 }
 
-bool HandStrength::operator<(const HandStrength & other)
+bool HandStrength::operator<(const HandStrength & other) const
 {
-	if(handType < other.handType)
-		return true;
-	else if(handType > other.handType)
-		return false;
+	std::list<int>::const_iterator myIter, otherIter;
+	myIter = handVal.begin();
+	otherIter = other.handVal.begin();
 
-	for(int i=0; i<5; ++i)
+	while(myIter != handVal.end() && otherIter != handVal.end())
 	{
-		if(handVal[i] < other.handVal[i])
+		if(*myIter < *otherIter)
 			return true;
-		else if(handVal[i] > other.handVal[i])
+		else if(*myIter > *otherIter)
 			return false;
-	}
 
+		++myIter;
+		++otherIter;
+	}
+	// hands are equal
 	return false;
 }
 
-bool HandStrength::operator==(const HandStrength & other)
+bool HandStrength::operator==(const HandStrength & other) const
 {
-	return handType == other.handType
-		&& handVal[0] == other.handVal[0]
-		&& handVal[1] == other.handVal[1]
-		&& handVal[2] == other.handVal[2]
-		&& handVal[3] == other.handVal[3]
-		&& handVal[4] == other.handVal[4];
+	// if neither hand is less than the other, they are equal
+	return !(operator<(other) ||
+			other.operator<(*this));
 }
 

@@ -6,13 +6,16 @@
  * objects in the model to implement the game.
  */
 
-#include <vector>
+#include <list>
 
 #include "model/card.h"
 #include "model/deck.h"
-#include "model/seat.h"
 
 class Player;
+class Seat;
+
+typedef std::list<Seat*> Table;
+typedef std::list<Card*> CardList;
 
 class Regulator
 {
@@ -21,37 +24,35 @@ public:
 	~Regulator();
 
 	Deck * GetDeck();
-	std::vector<Seat*> GetSeats();
+	Table GetSeats();
 	void AddPlayer(Player * player);
 	int GetPotSize();
-	void DealCards();
-	void Simulate(){}
-
-	void BeginHand();
-	void Notify();
+	void Simulate();
 	
 private:
+	// game-wide member functions
 	void initCards();
-	void initPlayers();
-	void initSeats();
-	void dealCardsToPlayers();
-	int requestPlayerAction(const std::vector<Seat*> &seatPostions, int currentBetSize);
-	void dealCardsToBoard(int numCards);
 
+	// hand specific member functions
+	void beginHand();
+	void dealCardsToPlayers();
+	void dealCardsToBoard(int numCards);
+	bool getPlayerActions();
+	void notifyPlayers(int seatNum, int bet);
+	void showdown();
+	void cleanupHand();
+
+	// game-wide member vars
 	Card cards[DECKSIZE];
 	Deck * deck;
-	Player * player1;
-	Player * player2;
-	Player * player3;
-	Player * player4;
-	Player * player5;
-	Player * player6;
-	Player * player7;
-	Player * player8;
-	Player * player9;
-	Player * player10;	
-	
-	std::vector<Seat*> seats;
+	int numPlayers;
+	Table seats;
+
+	// hand specific member vars
+	Table seatsInHand;
+	CardList board;
+	Table::iterator actionSeat;
+	int currentBet;
 	int potSize;
 };
 

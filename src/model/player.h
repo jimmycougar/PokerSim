@@ -10,22 +10,20 @@ class Player
 	
 public:
 
-	Player(string inFirstName, string inLastName, int inBankRoll, int inStackSize);
+	Player(string inFirstName, string inLastName, int inBankRoll);
 	~Player();
 
-	int PostBigBlind();
-	int PostSmallBlind();
-	int GetStackSize();
+	int PostBlind(int blindSize);
 	string GetFirstName();
 	string GetLastName();
 	int GetPlayerAction(int betSize);
+	void NotifyPlayerAction(int seatNum, int betSize);
 
 private:
 
 	string firstName;
 	string lastName;
 	int bankRoll;
-	int stackSize;
 };
 #endif //PLAYER_H
 

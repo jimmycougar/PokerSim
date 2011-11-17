@@ -1,32 +1,22 @@
 #include "model/regulator.h"
 #include "model/player.h"
+#include "model/seat.h"
+#include "model/handstrength.h"
 
 Regulator::Regulator()
 {
 	initCards();
-	deck = new Deck(cards);	
-
-	initPlayers();
-	initSeats();
+	deck = new Deck(cards);
+	numPlayers = 0;
 }
 
 Regulator::~Regulator()
 {
 	delete deck;
-	delete player1;
-	delete player2;
-	delete player3;
-	delete player4;
-	delete player5;
-	delete player6;
-	delete player7;
-	delete player8;
-	delete player9;
-	delete player10;
 
-	std::vector<Seat*>::iterator iter;
-	for(iter = seats.begin(); iter < seats.end(); iter++)
+	for(Table::iterator iter = seats.begin(); iter != seats.end(); ++iter)
 	{
+		delete (*iter)->player;
 		delete *iter;
 	}
 }
@@ -44,93 +34,178 @@ void Regulator::initCards()
 
 void Regulator::AddPlayer(Player * newPlayer)
 {
+	if(newPlayer == NULL)
+		return;
 
+	Seat * seat;
+	seat->seatNum = numPlayers++;
+	seat->player = newPlayer;
+	seats.push_back(seat);
 }
 
-void Regulator::initPlayers() 
+void Regulator::Simulate()
 {
-	player1 = new Player("Joe", "Smith", 2000, 300);
-	player2 = new Player("Katie", "Bradshaw", 1500, 200);
-	player3 = new Player("Kevin", "Peterson", 5000, 300);
-	player4 = new Player("Jimmy", "Thomas", 4500, 250);
-	player5 = new Player("Jane", "Doe", 1500, 150);
-	player6 = new Player("David", "Hammer", 8000, 300);
-	player7 = new Player("Jackie", "Diamond", 3300, 300);
-	player8 = new Player("Blah", "LastName", 4900, 300);
-	player9 = new Player("John", "Crap", 2000, 200);
-	player10 = new Player("Herro", "Goodbye", 2900, 300);
-}
 
-void Regulator::initSeats() 
-{
-	Seat* seat1 = new Seat(player1, 0, 0, player1->GetStackSize());
-	Seat* seat2 = new Seat(player2, 0, 0, player2->GetStackSize());
-	Seat* seat3 = new Seat(player3, 0, 0, player3->GetStackSize());
-	Seat* seat4 = new Seat(player4, 0, 0, player4->GetStackSize());
-	Seat* seat5 = new Seat(player5, 0, 0, player5->GetStackSize());
-	Seat* seat6 = new Seat(player6, 0, 0, player6->GetStackSize());
-	Seat* seat7 = new Seat(player7, 0, 0, player7->GetStackSize());
-	Seat* seat8 = new Seat(player8, 0, 0, player8->GetStackSize());
-	Seat* seat9 = new Seat(player9, 0, 0, player9->GetStackSize());
-	Seat* seat10 = new Seat(player10, 0, 0, player10->GetStackSize());
+	beginHand();
 
-	seats.push_back(seat1);
-	seats.push_back(seat2);
-	seats.push_back(seat3);
-	seats.push_back(seat4);
-	seats.push_back(seat5);
-	seats.push_back(seat6);
-	seats.push_back(seat7);
-	seats.push_back(seat8);
-	seats.push_back(seat9);
-	seats.push_back(seat10);
-}
-
-void Regulator::BeginHand() 
-{
-	std::vector<Seat*>::iterator iter;
-	int currentPotSize, bigBlind, smallBlind = 0;
-
-	for(iter = seats.begin(); iter != seats.end(); iter++)
+	if(getPlayerActions())
 	{
-		if(currentPotSize == 0)
+		dealCardsToBoard(3);
+		if(getPlayerActions())
 		{
-			smallBlind = (*iter)->player->PostSmallBlind();
-			currentPotSize++;
-		} 
-		else if(currentPotSize == 1)
-		{
-			bigBlind = (*iter)->player->PostBigBlind();
-			currentPotSize++;
-		} 
-		else
-		{
-			break;
+			dealCardsToBoard(1);
+			if(getPlayerActions())
+			{
+				dealCardsToBoard(1);
+				if(getPlayerActions())
+				{
+					showdown();
+				}
+			}
 		}
 	}
-
-	std::vector<Seat*> preFlopSeatOrder(seats);
-	preFlopSeatOrder.push_back(preFlopSeatOrder.front());	//move small blind to back
-	preFlopSeatOrder.push_back(preFlopSeatOrder.front());	//move big blind to back
-
-	dealCardsToPlayers();
-	currentPotSize += requestPlayerAction(preFlopSeatOrder, bigBlind);
-
-	dealCardsToBoard(3);
-	currentPotSize += requestPlayerAction(seats, currentPotSize);
-
-	dealCardsToBoard(1);
-	currentPotSize += requestPlayerAction(seats, currentPotSize);
-
-	dealCardsToBoard(1);
-	currentPotSize += requestPlayerAction(seats, currentPotSize);
-
-	//Ask players to show cards and find winner
+	cleanupHand();
 }
 
-void Regulator::Notify()
+
+void Regulator::beginHand() 
 {
-	//go through our list of observers and call all notify functions
+	if(seats.size() < 2)
+		return;
+
+	// these should be member variables that get set by controller
+	int smallBlind = 1;
+	int bigBlind = 2;
+
+	// initialize hand specific variables
+	potSize = 0;
+	currentBet = 0;
+	board.clear();
+	seatsInHand.clear();
+	
+	Table::iterator iter;
+	
+	// initialize seat's hand specific vars
+	for(iter = seats.begin(); iter != seats.end(); ++iter)
+	{
+		(*iter)->currentBet = 0;
+		(*iter)->card1 = 0;
+		(*iter)->card2 = 0;
+	}
+
+	// setup the blinds
+	iter = seats.begin();
+	Seat * smallBlindSeat = *iter;
+	++iter;
+	Seat * bigBlindSeat = *iter;
+	++iter;
+	if(iter == seats.end())
+		actionSeat = seats.begin();
+	else
+		actionSeat = iter;
+	
+	// post the blinds
+	smallBlindSeat->currentBet = smallBlindSeat->player->PostBlind(smallBlind);
+	bigBlindSeat->currentBet = bigBlindSeat->player->PostBlind(bigBlind);
+
+	currentBet = bigBlind;
+
+	deck->Shuffle();
+	dealCardsToPlayers();
+
+	// add everyone to be in the hand
+	seatsInHand = seats;
+}
+
+// returns true if the hand should continue
+bool Regulator::getPlayerActions()
+{
+	// get player actions until largest bet has been called by all remaining players
+	while((*actionSeat)->currentBet < currentBet)
+	{
+		// ask the player what he wants to do
+		int bet = (*actionSeat)->player->GetPlayerAction(currentBet);
+		
+		// notify all of the players about what this player did
+		notifyPlayers((*actionSeat)->seatNum, bet);
+
+		if(bet < currentBet)
+		{
+			// player folded; move his current bet to the pot and remove him from the hand
+			potSize += (*actionSeat)->currentBet;
+			(*actionSeat)->stackSize -= (*actionSeat)->currentBet;
+			// this removes the player and advances the iterator to the next item in the list
+			actionSeat = seatsInHand.erase(actionSeat);
+		}
+		else
+		{
+			// player called or raised
+			(*actionSeat)->currentBet = currentBet = bet;
+			// get the next players action
+			++actionSeat;
+		}
+		
+		// wrap around
+		if(actionSeat == seatsInHand.end())
+			actionSeat = seatsInHand.begin();
+	}
+
+	// set the action on the player after the button
+	actionSeat = seatsInHand.begin();
+
+	// move the bets from the players' stacks to the pot
+	for(Table::iterator iter = seatsInHand.begin(); iter != seatsInHand.end(); ++iter)
+	{
+		potSize += currentBet;
+		(*iter)->stackSize -= currentBet;
+		(*iter)->currentBet = 0;
+	}
+
+	currentBet = 0;
+
+	// return whether the hand should continue
+	return seatsInHand.size() > 1;
+}
+
+void Regulator::notifyPlayers(int seatNum, int bet)
+{
+	for(Table::iterator iter = seats.begin(); iter!= seats.end(); ++iter)
+	{
+		(*iter)->player->NotifyPlayerAction(seatNum, bet);
+	}
+}
+
+void Regulator::showdown()
+{
+	std::list<HandStrength> handList;
+
+	// add all the handlists up
+	for(Table::iterator iter = seatsInHand.begin(); iter != seatsInHand.end(); ++iter)
+	{
+		CardList hand = board;
+		hand.push_back((*iter)->card1);
+		hand.push_back((*iter)->card2);
+		*((*iter)->hand) = HandStrength(hand);
+		handList.push_back(*((*iter)->hand));
+	}
+
+	// determine the best hand
+	handList.sort();
+	HandStrength topHand = handList.back();
+
+	// remove any hands that are not the best
+	for(Table::iterator iter = seatsInHand.begin(); iter != seatsInHand.end(); ++iter)
+	{
+		if(*((*iter)->hand) < topHand)
+		{
+			seatsInHand.erase(iter);
+		}
+	}
+}
+
+void Regulator::cleanupHand()
+{
+
 }
 
 void Regulator::dealCardsToBoard(int numCards)
@@ -138,36 +213,15 @@ void Regulator::dealCardsToBoard(int numCards)
 
 }
 
-int Regulator::requestPlayerAction(const std::vector<Seat*> &seatPositions, int currentBetSize)
-{
-	std::vector<Seat*>::const_iterator iter;
-	int originalBetSize = currentBetSize;
-
-	for(iter = seatPositions.begin(); iter != seatPositions.end(); iter++)
-	{
-		int playerBetSize = (*iter)->player->GetPlayerAction(originalBetSize);
-
-		if(playerBetSize > originalBetSize)
-		{
-			//TODO: make sure raise amount is valid
-		}
-
-		//regulator needs to handle player action
-	}
-
-	return 0;
-}
-
-
 void Regulator::dealCardsToPlayers()
 {
-	std::vector<Seat*>::iterator iter;
+	std::list<Seat*>::iterator iter;
 	
 	Card* card;
 	for(iter=seats.begin(); iter != seats.end(); iter++) 
 	{
 		card = deck->Pop();
-		(*iter)->card1 = card;		
+		(*iter)->card1 = card;
 	}
 
 	for(iter=seats.begin(); iter != seats.end(); iter++)
@@ -182,7 +236,7 @@ Deck * Regulator::GetDeck()
 	return deck;
 }
 
-std::vector<Seat*> Regulator::GetSeats()
+std::list<Seat*> Regulator::GetSeats()
 {
 	return seats;
 }
@@ -191,3 +245,4 @@ int Regulator::GetPotSize()
 {
 	return potSize;
 }
+

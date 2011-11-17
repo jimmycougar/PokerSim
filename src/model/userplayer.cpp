@@ -1,5 +1,5 @@
 #include "model/userplayer.h"
 
-UserPlayer::UserPlayer(int inStackSize) :
-	Player("","", inStackSize, inStackSize)
+UserPlayer::UserPlayer(int inBankroll) :
+	Player("","", inBankroll)
 {}

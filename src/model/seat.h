@@ -1,23 +1,22 @@
 #ifndef SEAT_H
 #define SEAT_H
 
-#include "model/player.h"
-#include "model/card.h"
+class Player;
+class Card;
+class HandStrength;
 
 class Seat
 {
 
 public:
 
-	Seat(Player* inPlayer, Card* inCard1, Card* inCard2, int inStackSize);
-	~Seat();
-
+	int seatNum;
 	Player* player;
 	Card* card1;
 	Card* card2;
 	int stackSize;
-	bool folded;
-
+	int currentBet;
+	HandStrength * hand;
 };
 #endif //SEAT_H
 

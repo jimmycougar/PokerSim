@@ -2,12 +2,10 @@
 
 #include "player.h"
 
-Player::Player(string inFirstName, string inLastName, int inBankRoll, int inStackSize) : 
+Player::Player(string inFirstName, string inLastName, int inBankRoll) : 
 	firstName(inFirstName),
 	lastName(inLastName),
-	bankRoll(inBankRoll),
-	stackSize(inStackSize)
-
+	bankRoll(inBankRoll)
 {
 }
 
@@ -16,24 +14,19 @@ Player::~Player()
 
 }
 
-int Player::PostBigBlind() 
+int Player::PostBlind(int blindSize) 
 {
-	return 2;
-}
-
-int Player::PostSmallBlind()
-{
-	return 1;
+	return blindSize;
 }
 
 int Player::GetPlayerAction(int betSize)
 {
-	return 0;
+	return betSize;
 }
 
-int Player::GetStackSize()
+void Player::NotifyPlayerAction(int seatNum, int betSize)
 {
-	return stackSize;
+
 }
 
 string Player::GetFirstName()

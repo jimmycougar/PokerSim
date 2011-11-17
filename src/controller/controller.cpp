@@ -35,16 +35,16 @@ void Controller::Run()
 	cout << "Number of AI players: ";
 	cin >> numPlayers;
 	int stackSize;
-	cout << "Starting stack size: ";
+	cout << "Starting bankroll: ";
 	cin >> stackSize;
 
 	//regulator.AddPlayer(new UserPlayer(stackSize));
-	//for(int i=0; i<numPlayers; ++i)
-	//{
-//		regulator.AddPlayer(new AIPlayer(stackSize));
-//	}
+	for(int i=0; i<numPlayers; ++i)
+	{
+		regulator.AddPlayer(new AIPlayer(stackSize));
+	}
 
-//	regulator.Simulate();
+	regulator.Simulate();
 /*
 	Card c1(Card::ACE, Card::SPADE);
 	Card c2(Card::QUEEN, Card::HEART);

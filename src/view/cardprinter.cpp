@@ -52,8 +52,9 @@ void CardPrinter::Print(Card * card)
 
 void CardPrinter::PrintHandStrength(HandStrength * handStrength)
 {
-	printf(strengthString[handStrength->handType], cardinalString[handStrength->handVal[0]]);
-	printf("\n");
+	int handType = handStrength->handVal.front();
+
+	printf("%s\n", strengthString[handType]);
 }
 
 void CardPrinter::PrintDeck(Deck * deck) 
@@ -71,18 +72,18 @@ void CardPrinter::PrintDeck(Deck * deck)
 	}
 }
 
-void CardPrinter::PrintSeats(const std::vector<Seat*> &seats)
-{
-	std::cout << "Printing seats..." << std::endl; 
-	std::vector<Seat*>::const_iterator iter;
+//void CardPrinter::PrintSeats(const std::vector<Seat*> &seats)
+//{
+//	std::cout << "Printing seats..." << std::endl; 
+	//std::vector<Seat*>::const_iterator iter;
 	
-	for(iter = seats.begin(); iter != seats.end(); iter++)
-	{
-		std::cout<<"Player "<<(*iter)->player->GetFirstName()<<" "
-			<<(*iter)->player->GetLastName()<<std::endl;
+	//for(iter = seats.begin(); iter != seats.end(); iter++)
+	//{
+	//	std::cout<<"Player "<<(*iter)->player->GetFirstName()<<" "
+	//		<<(*iter)->player->GetLastName()<<std::endl;
 
-		Print((*iter)->card1);
-		Print((*iter)->card2);
-		std::cout<<"\n";
-	}
-}
+	//	Print((*iter)->card1);
+	//	Print((*iter)->card2);
+	//	std::cout<<"\n";
+	//}
+//}

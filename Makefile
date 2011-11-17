@@ -13,7 +13,6 @@ MODELSRC = \
 	player.cpp \
 	userplayer.cpp \
 	aiplayer.cpp \
-	seat.cpp \
 	regulator.cpp
 
 VIEWSRC = \
