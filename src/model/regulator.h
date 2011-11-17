@@ -27,10 +27,16 @@ public:
 	void DealCards();
 	void Simulate(){}
 
+	void BeginHand();
+	void Notify();
+	
 private:
 	void initCards();
 	void initPlayers();
 	void initSeats();
+	void dealCardsToPlayers();
+	int requestPlayerAction(const std::vector<Seat*> &seatPostions, int currentBetSize);
+	void dealCardsToBoard(int numCards);
 
 	Card cards[DECKSIZE];
 	Deck * deck;

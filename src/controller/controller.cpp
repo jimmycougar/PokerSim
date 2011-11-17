@@ -38,13 +38,13 @@ void Controller::Run()
 	cout << "Starting stack size: ";
 	cin >> stackSize;
 
-	regulator.AddPlayer(new UserPlayer(stackSize));
-	for(int i=0; i<numPlayers; ++i)
-	{
-		regulator.AddPlayer(new AIPlayer(stackSize));
-	}
+	//regulator.AddPlayer(new UserPlayer(stackSize));
+	//for(int i=0; i<numPlayers; ++i)
+	//{
+//		regulator.AddPlayer(new AIPlayer(stackSize));
+//	}
 
-	regulator.Simulate();
+//	regulator.Simulate();
 /*
 	Card c1(Card::ACE, Card::SPADE);
 	Card c2(Card::QUEEN, Card::HEART);

@@ -16,29 +16,19 @@ Player::~Player()
 
 }
 
-void Player::PostBigBlind() 
+int Player::PostBigBlind() 
 {
-
+	return 2;
 }
 
-void Player::PostSmallBlind()
+int Player::PostSmallBlind()
 {
-
+	return 1;
 }
 
-void Player::Fold() 
+int Player::GetPlayerAction(int betSize)
 {
-
-}
-
-void Player::Call() 
-{
-
-}
-
-void Player::Raise()
-{
-
+	return 0;
 }
 
 int Player::GetStackSize()
