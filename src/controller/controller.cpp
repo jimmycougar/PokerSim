@@ -27,14 +27,11 @@ void Controller::Run()
 	int numPlayers;
 	cout << "Number of AI players: ";
 	cin >> numPlayers;
-	int stackSize;
-	cout << "Starting bankroll: ";
-	cin >> stackSize;
 
 	//regulator.AddPlayer(new UserPlayer(stackSize));
 	for(int i=0; i<numPlayers; ++i)
 	{
-		regulator->AddPlayer(new AIPlayer(stackSize));
+		regulator->AddPlayer(new AIPlayer(0));
 	}
 
 
