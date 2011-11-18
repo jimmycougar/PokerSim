@@ -16,7 +16,8 @@ MODELSRC = \
 	regulator.cpp
 
 VIEWSRC = \
-	cardprinter.cpp
+	cardprinter.cpp \
+	textview.cpp
 
 CONTROLSRC = \
 	controller.cpp

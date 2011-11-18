@@ -9,6 +9,9 @@
 #include "model/seat.h"
 #include "model/handstrength.h"
 
+using std::string;
+using std::cout;
+
 const char * CardPrinter::cardinalString[] = {
 	"Two",
 	"Three",
@@ -46,15 +49,28 @@ void CardPrinter::Print(Card * card)
 	if(!card)
 		return;
 
-	std::cout << cardinalString[card->GetCardinal()] 
-		<< suitString[card->GetSuit()] << std::endl;
+	cout << cardinalString[card->GetCardinal()] 
+		<< suitString[card->GetSuit()];
 }
 
 void CardPrinter::PrintHandStrength(HandStrength * handStrength)
 {
-	int handType = handStrength->handVal.front();
-
-	printf("%s\n", strengthString[handType]);
+	HandStrength hand = *handStrength;
+	int handType = hand.handVal.front();
+	hand.handVal.pop_front();
+	int handVal = hand.handVal.front();
+	hand.handVal.pop_front();
+	
+	char buffer[256];
+	sprintf(buffer, strengthString[handType], cardinalString[handVal]);
+	cout << buffer;
+	while(!hand.handVal.empty())
+	{
+		// debug line commented out
+		//cout << " " << hand.handVal.front();
+		hand.handVal.pop_front();
+	}
+	cout << std::endl;
 }
 
 void CardPrinter::PrintDeck(Deck * deck) 
@@ -64,7 +80,7 @@ void CardPrinter::PrintDeck(Deck * deck)
 		throw std::exception();
 	}
 
-	std::cout << "\nPrinting deck...\n";
+	cout << "\nPrinting deck...\n";
 	Card * card;
 	while((card = deck->Pop()) != 0) 
 	{

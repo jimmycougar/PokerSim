@@ -21,11 +21,15 @@ int Player::PostBlind(int blindSize)
 
 int Player::GetPlayerAction(int betSize)
 {
-	sleep(1);
 	return betSize;
 }
 
-void Player::NotifyPlayerAction(int seatNum, int betSize)
+void Player::notifyCard(Card * card)
+{
+	
+}
+
+void Player::notifyAction(int seatNum, int betSize)
 {
 
 }

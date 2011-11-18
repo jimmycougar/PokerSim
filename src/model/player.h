@@ -3,9 +3,13 @@
 
 #include <string>
 
+#include "observer.h"
+
 using std::string;
 
-class Player
+class Card;
+
+class Player : public Observer
 {
 	
 public:
@@ -17,7 +21,8 @@ public:
 	string GetFirstName();
 	string GetLastName();
 	int GetPlayerAction(int betSize);
-	void NotifyPlayerAction(int seatNum, int betSize);
+	virtual void notifyCard(Card * card);
+	virtual void notifyAction(int seatNum, int betSize);
 
 private:
 

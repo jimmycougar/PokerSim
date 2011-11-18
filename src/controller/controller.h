@@ -6,14 +6,15 @@
 class Controller
 {
 public:
-	Controller();
+	Controller(Observer * inView, Regulator * inRegulator);
 	~Controller();
 
 	void Run();
 
 private:
 
-	Regulator regulator;
+	Observer * view;
+	Regulator * regulator;
 };
 
 #endif // CONTROLLER_H

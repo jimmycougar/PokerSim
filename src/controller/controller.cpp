@@ -9,9 +9,11 @@ using std::string;
 using std::cout;
 using std::cin;
 
-Controller::Controller()
+Controller::Controller(Observer * inView, Regulator * inRegulator) :
+	view(inView),
+	regulator(inRegulator)
 {
-
+	regulator->RegisterObserverAll(view);
 }
 
 Controller::~Controller()
@@ -32,9 +34,10 @@ void Controller::Run()
 	//regulator.AddPlayer(new UserPlayer(stackSize));
 	for(int i=0; i<numPlayers; ++i)
 	{
-		regulator.AddPlayer(new AIPlayer(stackSize));
+		regulator->AddPlayer(new AIPlayer(stackSize));
 	}
 
-	regulator.Simulate();
+
+	regulator->Simulate();
 }
 

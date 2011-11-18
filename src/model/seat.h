@@ -18,5 +18,6 @@ public:
 	int currentBet;
 	HandStrength * hand;
 };
+
 #endif //SEAT_H
 

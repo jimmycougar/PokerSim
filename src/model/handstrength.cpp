@@ -20,7 +20,7 @@ HandStrength::HandStrength(std::list<Card*> cards)
 	int cardinal[NUMCARDINALS] = {0};
 	std::list<int> suit[NUMSUITS];
 	
-	// count cardinals and sutis
+	// count cardinals and suits
 	for(std::list<Card*>::iterator i=cards.begin(); i != cards.end(); ++i)
 	{
 		int thisCardinal = (*i)->GetCardinal();
@@ -35,6 +35,7 @@ HandStrength::HandStrength(std::list<Card*> cards)
 		{
 			flush = true;
 			flushSuit = i;
+			suit[flushSuit].sort();
 			break;
 		}
 	}
@@ -232,7 +233,10 @@ HandStrength::HandStrength(std::list<Card*> cards)
 		}
 
 		if(oneOfKindSet.front() > handVal.back())
+		{
+			handVal.pop_back();
 			handVal.push_back(oneOfKindSet.front());
+		}
 
 		return;
 	}
@@ -269,7 +273,7 @@ bool HandStrength::operator<(const HandStrength & other) const
 	myIter = handVal.begin();
 	otherIter = other.handVal.begin();
 
-	while(myIter != handVal.end() && otherIter != handVal.end())
+	while(myIter != handVal.end() && otherIter != other.handVal.end())
 	{
 		if(*myIter < *otherIter)
 			return true;

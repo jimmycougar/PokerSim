@@ -2,6 +2,7 @@
 #include "model/player.h"
 #include "model/seat.h"
 #include "model/handstrength.h"
+#include "observer.h"
 
 Regulator::Regulator()
 {
@@ -36,15 +37,44 @@ void Regulator::AddPlayer(Player * newPlayer)
 	if(newPlayer == NULL)
 		return;
 
-	Seat * seat;
+	Seat * seat = new Seat();
 	seat->seatNum = seats.size();
 	seat->player = newPlayer;
 	seats.push_back(seat);
+	RegisterObserverAll(newPlayer);
+}
+
+
+void Regulator::RegisterObserverAll(Observer * observer)
+{
+	RegisterCardObserver(observer);
+	RegisterActionObserver(observer);
+	RegisterHandShowObserver(observer);
+	RegisterWinnerObserver(observer);
+}
+
+void Regulator::RegisterCardObserver(Observer * observer)
+{
+	cardObservers.push_back(observer);
+}
+
+void Regulator::RegisterActionObserver(Observer * observer)
+{
+	actionObservers.push_back(observer);
+}
+
+void Regulator::RegisterHandShowObserver(Observer * observer)
+{
+	handShowObservers.push_back(observer);
+}
+
+void Regulator::RegisterWinnerObserver(Observer * observer)
+{
+	winnerObservers.push_back(observer);
 }
 
 void Regulator::Simulate()
 {
-
 	beginHand();
 
 	if(getPlayerActions())
@@ -82,10 +112,13 @@ void Regulator::beginHand()
 	board.clear();
 	seatsInHand.clear();
 	
+	// add everyone to be in the hand
+	seatsInHand = seats;
+
 	Table::iterator iter;
 	
 	// initialize seat's hand specific vars
-	for(iter = seats.begin(); iter != seats.end(); ++iter)
+	for(iter = seatsInHand.begin(); iter != seatsInHand.end(); ++iter)
 	{
 		(*iter)->currentBet = 0;
 		(*iter)->card1 = 0;
@@ -93,13 +126,13 @@ void Regulator::beginHand()
 	}
 
 	// setup the blinds
-	iter = seats.begin();
+	iter = seatsInHand.begin();
 	Seat * smallBlindSeat = *iter;
 	++iter;
 	Seat * bigBlindSeat = *iter;
 	++iter;
-	if(iter == seats.end())
-		actionSeat = seats.begin();
+	if(iter == seatsInHand.end())
+		actionSeat = seatsInHand.begin();
 	else
 		actionSeat = iter;
 	
@@ -112,9 +145,7 @@ void Regulator::beginHand()
 	deck->Shuffle();
 	dealCardsToPlayers();
 
-	// add everyone to be in the hand
-	seatsInHand = seats;
-}
+	}
 
 // returns true if the hand should continue
 bool Regulator::getPlayerActions()
@@ -126,7 +157,7 @@ bool Regulator::getPlayerActions()
 		int bet = (*actionSeat)->player->GetPlayerAction(currentBet);
 		
 		// notify all of the players about what this player did
-		notifyPlayers((*actionSeat)->seatNum, bet);
+		notifyAction((*actionSeat)->seatNum, bet);
 
 		if(bet < currentBet)
 		{
@@ -173,12 +204,10 @@ bool Regulator::getPlayerActions()
 	return seatsInHand.size() > 1;
 }
 
-void Regulator::notifyPlayers(int seatNum, int bet)
+void Regulator::notifyAction(int seatNum, int bet)
 {
-	for(Table::iterator iter = seats.begin(); iter!= seats.end(); ++iter)
-	{
-		(*iter)->player->NotifyPlayerAction(seatNum, bet);
-	}
+	for(ObserverList::iterator iter = actionObservers.begin(); iter != actionObservers.end(); ++iter)
+		(*iter)->notifyAction(seatNum, bet);
 }
 
 void Regulator::showdown()
@@ -191,8 +220,10 @@ void Regulator::showdown()
 		CardList hand = board;
 		hand.push_back((*iter)->card1);
 		hand.push_back((*iter)->card2);
-		*((*iter)->hand) = HandStrength(hand);
-		handList.push_back(*((*iter)->hand));
+		// these HandStrengths will be deleted here for losers, and in cleanupHand() for winners
+		(*iter)->hand = new HandStrength(hand);
+		handList.push_back(*(*iter)->hand);
+		notifyHandShow(*iter);
 	}
 
 	// determine the best hand
@@ -204,26 +235,45 @@ void Regulator::showdown()
 	{
 		if(*((*iter)->hand) < topHand)
 		{
-			seatsInHand.erase(iter);
+			delete (*iter)->hand;
+			seatsInHand.erase(iter--);
 		}
 	}
+}
+
+void Regulator::notifyHandShow(Seat * seat)
+{
+	for(ObserverList::iterator iter = handShowObservers.begin(); iter != handShowObservers.end(); ++iter)
+		(*iter)->notifyHandShow(seat->seatNum, seat->card1, seat->card2, seat->hand);
+}
+
+void Regulator::notifyWinner(Seat * seat, int potSize)
+{
+	for(ObserverList::iterator iter = winnerObservers.begin(); iter != winnerObservers.end(); ++iter)
+		(*iter)->notifyWinner(seat->seatNum, seat->hand, potSize);
 }
 
 void Regulator::cleanupHand()
 {
 	// any players still in the hand at this point are winners
-	int winnings = potSize / seatsInHand.size();
+	int share = potSize / seatsInHand.size();
 	unsigned int winners = 0;
 	for(Table::iterator iter = seatsInHand.begin(); iter != seatsInHand.end(); ++iter)
 	{
+		int winnings = share;
+		// adjust for split pots
 		if((potSize % seatsInHand.size()) > winners)
-		{
-			(*iter)->stackSize += winnings + 1;
-		}
-		else
-		{
-			(*iter)->stackSize += winnings;
-		}
+			winnings += 1;
+
+		// give the chips to the winner
+		(*iter)->stackSize += winnings;
+		
+		// notify observers
+		notifyWinner(*iter, winnings);
+		
+		// cleanup the HandStrength that was allocated in showdown()
+		delete (*iter)->hand;
+
 		++winners;
 	}
 
@@ -238,9 +288,16 @@ void Regulator::dealCardsToBoard(int numCards)
 {
 	for(int i=0; i<numCards; ++i)
 	{
-		board.push_back(deck->Pop());
-		// notify
+		Card * card = deck->Pop();
+		board.push_back(card);
+		notifyCardDealt(card);
 	}
+}
+
+void Regulator::notifyCardDealt(Card * card)
+{
+	for(ObserverList::iterator iter = cardObservers.begin(); iter != cardObservers.end(); ++iter)
+		(*iter)->notifyCard(card);
 }
 
 void Regulator::dealCardsToPlayers()
@@ -259,20 +316,5 @@ void Regulator::dealCardsToPlayers()
 		card = deck->Pop();
 		(*iter)->card2 = card;
 	}
-}
-
-Deck * Regulator::GetDeck()
-{
-	return deck;
-}
-
-std::list<Seat*> Regulator::GetSeats()
-{
-	return seats;
-}
-
-int Regulator::GetPotSize() 
-{
-	return potSize;
 }
 
