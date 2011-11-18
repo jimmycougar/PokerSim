@@ -26,11 +26,7 @@ public:
 	~Regulator();
 
 	// subscribe functions
-	void RegisterObserverAll(Observer * observer);
-	void RegisterCardObserver(Observer * observer);
-	void RegisterActionObserver(Observer * observer);
-	void RegisterHandShowObserver(Observer * observer);
-	void RegisterWinnerObserver(Observer * observer);
+	void RegisterObserver(Observer * observer);
 
 	// game state functions
 	void AddPlayer(Player * player);
@@ -39,7 +35,8 @@ public:
 private:
 
 	// notification functions
-	void notifyAction(int seatNum, int bet);
+	void notifyBlinds(Seat * smallBlindSeat, Seat * bigBlindSeat, int smallBlind, int bigBlind);
+	void notifyAction(Seat * seat, int, int);
 	void notifyCardDealt(Card * card);
 	void notifyHandShow(Seat * seat);
 	void notifyWinner(Seat * seat, int potSize);
@@ -48,7 +45,7 @@ private:
 	void initCards();
 
 	// hand specific member functions
-	void beginHand();
+	bool beginHand();
 	void dealCardsToPlayers();
 	void dealCardsToBoard(int numCards);
 	bool getPlayerActions();
@@ -56,6 +53,7 @@ private:
 	void cleanupHand();
 
 	// subscriber lists
+	ObserverList blindObservers;
 	ObserverList cardObservers;
 	ObserverList actionObservers;
 	ObserverList handShowObservers;
@@ -69,7 +67,6 @@ private:
 	// hand specific member vars
 	Table seatsInHand;
 	CardList board;
-	Table::iterator actionSeat;
 	int currentBet;
 	int potSize;
 };

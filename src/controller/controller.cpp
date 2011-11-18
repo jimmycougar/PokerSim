@@ -13,7 +13,7 @@ Controller::Controller(Observer * inView, Regulator * inRegulator) :
 	view(inView),
 	regulator(inRegulator)
 {
-	regulator->RegisterObserverAll(view);
+	regulator->RegisterObserver(view);
 }
 
 Controller::~Controller()

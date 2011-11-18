@@ -41,44 +41,37 @@ void Regulator::AddPlayer(Player * newPlayer)
 	seat->seatNum = seats.size();
 	seat->player = newPlayer;
 	seats.push_back(seat);
-	RegisterObserverAll(newPlayer);
+	RegisterObserver(newPlayer);
 }
 
-
-void Regulator::RegisterObserverAll(Observer * observer)
+void Regulator::RegisterObserver(Observer * observer)
 {
-	RegisterCardObserver(observer);
-	RegisterActionObserver(observer);
-	RegisterHandShowObserver(observer);
-	RegisterWinnerObserver(observer);
-}
-
-void Regulator::RegisterCardObserver(Observer * observer)
-{
+	blindObservers.push_back(observer);
 	cardObservers.push_back(observer);
-}
-
-void Regulator::RegisterActionObserver(Observer * observer)
-{
 	actionObservers.push_back(observer);
-}
-
-void Regulator::RegisterHandShowObserver(Observer * observer)
-{
 	handShowObservers.push_back(observer);
-}
-
-void Regulator::RegisterWinnerObserver(Observer * observer)
-{
 	winnerObservers.push_back(observer);
 }
 
 void Regulator::Simulate()
 {
-	beginHand();
+	if(!beginHand())
+		return;
+
+	// arrange it so the big blind goes last
+	seatsInHand.push_back(seatsInHand.front());
+	seatsInHand.pop_front();
+	seatsInHand.push_back(seatsInHand.front());
+	seatsInHand.pop_front();
 
 	if(getPlayerActions())
 	{
+		// re-arrange the blinds into first position
+		seatsInHand.push_front(seatsInHand.back());
+		seatsInHand.pop_back();
+		seatsInHand.push_front(seatsInHand.back());
+		seatsInHand.pop_back();
+
 		dealCardsToBoard(3);
 		if(getPlayerActions())
 		{
@@ -97,10 +90,10 @@ void Regulator::Simulate()
 }
 
 
-void Regulator::beginHand() 
+bool Regulator::beginHand() 
 {
 	if(seats.size() < 2)
-		return;
+		return false;
 
 	// these should be member variables that get set by controller
 	int smallBlind = 1;
@@ -130,34 +123,42 @@ void Regulator::beginHand()
 	Seat * smallBlindSeat = *iter;
 	++iter;
 	Seat * bigBlindSeat = *iter;
-	++iter;
-	if(iter == seatsInHand.end())
-		actionSeat = seatsInHand.begin();
-	else
-		actionSeat = iter;
 	
 	// post the blinds
 	smallBlindSeat->currentBet = smallBlindSeat->player->PostBlind(smallBlind);
 	bigBlindSeat->currentBet = bigBlindSeat->player->PostBlind(bigBlind);
+	
+	notifyBlinds(smallBlindSeat, bigBlindSeat, smallBlind, bigBlind);
 
 	currentBet = bigBlind;
 
 	deck->Shuffle();
 	dealCardsToPlayers();
 
-	}
+	return true;
+}
+
+void Regulator::notifyBlinds(Seat * smallBlindSeat, Seat * bigBlindSeat, int smallBlind, int bigBlind)
+{
+	for(ObserverList::iterator iter = blindObservers.begin(); iter != blindObservers.end(); ++iter)
+		(*iter)->notifyBlinds(smallBlindSeat->seatNum, smallBlind, bigBlindSeat->seatNum, bigBlind);
+}
 
 // returns true if the hand should continue
 bool Regulator::getPlayerActions()
 {
+	// save the starting bet so that players can check
+	int startingBet = currentBet;
+	Table::iterator actionSeat = seatsInHand.begin();
+
 	// get player actions until largest bet has been called by all remaining players
-	while((*actionSeat)->currentBet < currentBet || currentBet == 0)
+	while((*actionSeat)->currentBet < currentBet || currentBet == startingBet)
 	{
 		// ask the player what he wants to do
 		int bet = (*actionSeat)->player->GetPlayerAction(currentBet);
 		
 		// notify all of the players about what this player did
-		notifyAction((*actionSeat)->seatNum, bet);
+		notifyAction(*actionSeat, bet, currentBet);
 
 		if(bet < currentBet)
 		{
@@ -178,7 +179,7 @@ bool Regulator::getPlayerActions()
 		// handle action after button seat
 		if(actionSeat == seatsInHand.end())
 		{
-			if(currentBet == 0)
+			if(currentBet == startingBet)
 				// if it checked around
 				break;
 			else
@@ -204,10 +205,10 @@ bool Regulator::getPlayerActions()
 	return seatsInHand.size() > 1;
 }
 
-void Regulator::notifyAction(int seatNum, int bet)
+void Regulator::notifyAction(Seat * seat, int bet, int currentBet)
 {
 	for(ObserverList::iterator iter = actionObservers.begin(); iter != actionObservers.end(); ++iter)
-		(*iter)->notifyAction(seatNum, bet);
+		(*iter)->notifyAction(seat->seatNum, seat->currentBet, bet, currentBet);
 }
 
 void Regulator::showdown()
